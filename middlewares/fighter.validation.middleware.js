@@ -46,20 +46,12 @@ const checkEmptyFields = (fighter) => {
 }
 
 const checkName = (name) => {
-  const normalizedName = name.toLowerCase();
-  const sameName = fighterService.searchFighter({name: normalizedName})
-
-  if (name.toLowerCase() === sameName.toLowerCase()) {
-      return false;
-  }
-  return true;
+  return fighterService.searchFighterByName(name);
 }
 
 
 const validateFighter = (req) => {
-  const id = req.params.id || "";
-  const { name, health = 100, power, defense} = req.body;
-  req.body.name = req.body.name.toLowerCase();
+  const { name, health, power, defense} = req.body;
 
   if (checkOtherFields(req.body)) {
     throw Error('Excess fields')
@@ -73,19 +65,19 @@ const validateFighter = (req) => {
     throw Error('Health must be a number from 80 to 120')
   } else if (defense && !validateDefense(defense)) {
     throw Error('Defense must be a number from 1 to 10')
-  } else if (name && !checkName(name)) {
+  } else if (name && checkName(name)) {
     throw Error('This name is already in use.');
   }
   return req.body;
 }
 
 const createFighterValid = (req, res, next) => {
-  const {name, health, power, defense} = req.body;
+  const {name, power, defense} = req.body;
 
   if (!name || !power || !defense) {
     res.status(400)
     res.err = Error('Missing necessary fields');
-  } 
+  }
 
   try {
     validateFighter(req);
@@ -94,17 +86,33 @@ const createFighterValid = (req, res, next) => {
   } finally {
     next();
   };
-
 }
 
 const updateFighterValid = (req, res, next) => {
-
+  const { name, health, power, defense} = req.body;
   if (Object.keys(req.body).length < 1) {
     res.status(400);
     res.err = Error('It should be at least one field to update');
   } else {
     try {
-      validateFighter(req);
+      // validateFighter(req);
+
+      if (checkOtherFields(req.body)) {
+        throw Error('Excess fields')
+      } else if (checkEmptyFields(req.body)) {
+        throw Error('Missing necessary fields')
+      }  else if (name && !validateName(name)) {
+        throw Error('Name can not be empty')
+      } else if (power && !validatePower(power)) {
+        throw Error('Power must be a number from 1 to 100')
+      } else if (health && !validateHealth(health)) {
+        throw Error('Health must be a number from 80 to 120')
+      } else if (defense && !validateDefense(defense)) {
+        throw Error('Defense must be a number from 1 to 10')
+      } else if (name && checkName(name)) {
+        throw Error('This name is already in use.');
+      }
+      return req.body;
     } catch (err) {
       if(err) {
         res.err = err;

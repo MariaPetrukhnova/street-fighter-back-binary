@@ -53,13 +53,12 @@ class FighterService {
   }
 
   searchFighter(query) {
-    const fighter = fighterRepository.getOne(query);
-    if (!fighter) {
-      return '';
-    }
-    return fighter.name;
+    return fighterRepository.getOne(query);
   }
-  
+
+  searchFighterByName(name) {
+    return fighterRepository.getOneByName(name);
+  }
 }
 
 

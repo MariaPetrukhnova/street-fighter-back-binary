@@ -3,7 +3,7 @@ import { fighterService } from "../services/fighterService.js";
 import { responseMiddleware } from "../middlewares/response.middleware.js";
 import {
   createFighterValid,
-  updateFighterValid,
+  updateFighterValid
 } from "../middlewares/fighter.validation.middleware.js";
 import { fighterRepository } from "../repositories/fighterRepository.js";
 
@@ -37,7 +37,11 @@ router.get('/:id', (req, res, next) => {
 router.post('/', createFighterValid, (req, res, next) => {
   try {
     if (!res.err) {
-      res.data = fighterService.createFighter({...req.body});
+      const fighter = {...req.body};
+      if (!fighter.health) {
+        fighter.health = 100;
+      }
+      res.data = fighterService.createFighter(fighter);
     }
   } catch (error) {
     res.err = error;
@@ -57,7 +61,6 @@ router.put('/:id', updateFighterValid, (req, res, next) => {
 
   } finally {
     next();
-
   }
 }, responseMiddleware);
 
