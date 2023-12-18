@@ -1,16 +1,9 @@
 import { USER } from "../models/user.js";
 import { userService } from "../services/userService.js";
 
-const checkNecessaryFields = (user) => {
-  for (let key in USER) {
-    if (!(key in user) && key !== 'id') return key;
-  }
-  return true;
-}
-
 const checkOtherFields = (user) => {
   for (let key in user) {
-    if (!USER.hasOwnProperty(key)) {
+    if (!USER.hasOwnProperty(key) || key === "id") {
       return key
     };
   };
@@ -19,7 +12,8 @@ const checkOtherFields = (user) => {
 
 const checkEmptyFields = (user) => {
   for (let key in user) {
-      if (!user[key]) return key;
+      let value = user[key].trim();
+      if (!value) return key;
   }
   return '';
 }
@@ -40,19 +34,15 @@ const validatePassword = (password) => {
 }
 
 const validateUser = (user) => {
-  console.log('Validate user', user)
   const {id, firstName, lastName, email, phoneNumber, password} = user;
 
-  const necessaryFields = checkNecessaryFields(user);
   const otherFields = checkOtherFields(user);
   const emptyFields = checkEmptyFields(user);
   const correctEmail = validateEmail(email);
   const correctPhoneNumber = validatePhoneNumber(phoneNumber);
   const correctPassword = validatePassword(password);
 
-  if (!necessaryFields) {
-    return Error(`Missing fields`);
-  } else if (otherFields) {
+  if (otherFields) {
     return Error(`Exess fields`);
   } else if (emptyFields) {
     return Error(`Empty fields ${emptyFields}`);
@@ -74,16 +64,17 @@ const loginUserValidate = (req, res, next) => {
   const {email, password} = req.body;
   const correctEmail = validateEmail(email);
   const correctPassword = validatePassword(password);
+  const entryData = userService.search({email: req.body.email.toLowerCase()})
 
   if (!correctEmail && correctPassword) {
     res.err = Error(`Incorrect email`);
-    res.err.status = 400;
-  } else if (correctEmail && !correctPassword) {
+    res.status(400);
+  } else if (entryData && entryData.password !== password) {
     res.err = Error(`Incorrect password`);
-    res.err.status = 400;
+    res.status(400);
   } else if (!email || !password) {
     res.err = Error(`Missing fields`);
-    res.err.status = 400;
+    res.status(400);
   } 
 
   next();
@@ -91,38 +82,42 @@ const loginUserValidate = (req, res, next) => {
 
 
 const createUserValid = (req, res, next) => {
-  const validation = validateUser(req.body, 'create')
+  const validation = validateUser(req.body);
+  const {firstName, lastName, email, phoneNumber, password} = req.body;
 
-  if (validation instanceof Error) {
+  if (!firstName || !lastName || !email || !phoneNumber || !password) {
+    res.err = Error(`Missing fields`);
+    res.status(400);
+  } else if (validation instanceof Error) {
     res.err = validation;
-    res.err.status = 400;
-  } else if (userService.search({email: req.body.email})) {
+    res.status(400);
+  } else if (userService.search({email: req.body.email.toLowerCase()})) {
     res.err = Error(`User with this email already exists`);
-    res.err.status = 400;
+    res.status(400);
   } else if (userService.search({phoneNumber: req.body.phoneNumber})) {
     res.err = Error(`User with this phone number already exists`);
-    res.err.status = 400;
+    res.status(400);
   }
   next();
 };
 
 const updateUserValid = (req, res, next) => {
-  const validation = validateUser(req.body, 'update')
+  const validation = validateUser(req.body)
 
-  console.log(validation)
-
-  if (validation instanceof Error) {
-    res.err = `${validation} 1st val`;
-    res.err.status = 400;
+  if (Object.keys(req.body).length < 1) {
+    return Error(`It should be at least one field to update`);
+  } else if (validation instanceof Error) {
+    res.err = validation;
+    res.status(400);
   } else if (!userService.search({id: req.params.id})) {
     res.err = Error(`User does not exist`);
-    res.err.status = 400;
-  } else if (userService.search({email: req.body.email})) {
+    res.status(400);
+  } else if (req.body.email && userService.search({email: req.body.email.toLowerCase()})) {
     res.err = Error(`User with this email already exists. You can not use the same`);
-    res.err.status = 400;
-  } else if (userService.search({phoneNumber: req.body.phoneNumber})) {
+    res.status(400);
+  } else if (req.body.phoneNumber && userService.search({phoneNumber: req.body.phoneNumber})) {
     res.err = Error(`User with this phone number already exists. You can not use the same`);
-    res.err.status = 400;
+    res.status(400);
   }
   next();
 };

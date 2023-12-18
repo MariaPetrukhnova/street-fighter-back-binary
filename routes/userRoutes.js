@@ -15,7 +15,6 @@ router.get('/', (req, res, next) => {
 
   } catch (error) {
     res.err = error;
-    res.status(404).send({ error: 'Users are not found' })
 
   } finally {
     next();
@@ -30,7 +29,6 @@ router.get('/:id', (req, res, next) => {
 
   } catch (error) {
     res.err = error;
-    res.status(404).send({ error: 'User is not found' })
 
   } finally {
     next();
@@ -57,7 +55,6 @@ router.put('/:id', updateUserValid, (req, res, next) => {
   try {
     if (!res.err) {
       res.data = userService.update( req.params.id, req.body);
-      console.log(res.data)
     }
   } catch (error) {
     res.err = error;
@@ -73,16 +70,14 @@ router.delete('/:id', (req, res, next) => {
   try {
     const id = req.params.id;
     res.data = userService.delete({id: id});
-    res.status(204).send("User deleted")
   } catch (error) {
     res.err = error;
-    res.status(400).send({ error: 'User delete error' })
 
   } finally {
     next();
 
   }
-});
+}, responseMiddleware);
 
 
 export { router };

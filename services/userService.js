@@ -17,11 +17,11 @@ class UserService {
       try {
           const currentUser = userRepository.getOne({id: userData});
           if (!currentUser) {
-            throw Error('User not found');
+            throw Error('User is not found');
             }
             return currentUser;
         } catch (error) {
-            throw Error('User not found');
+            throw Error('User is not found');
         }
   }
 
@@ -29,7 +29,7 @@ class UserService {
     if (userData) {
       return userRepository.create(userData); 
     } 
-    throw Error('User not saved');
+    throw Error('User is not saved');
   }
 
   update(id, userData) {
@@ -37,7 +37,7 @@ class UserService {
       const user = userRepository.update(id, userData);
       return user;
     }
-    throw Error('User not updated');
+    throw Error('User is not updated');
   }
   
 
@@ -46,7 +46,7 @@ class UserService {
     if (!item.length) {
       throw Error ('There is no such a user to delete');
     }
-    return item;
+    return "User is deleted";
 };
 
   search(search) {

@@ -5,9 +5,73 @@ import {
   createFighterValid,
   updateFighterValid,
 } from "../middlewares/fighter.validation.middleware.js";
+import { fighterRepository } from "../repositories/fighterRepository.js";
 
 const router = Router();
 
-// TODO: Implement route controllers for fighter
+router.get('/', (req, res, next) => {
+  try {
+    res.data = fighterService.getFighters();
+
+  } catch (error) {
+    res.err = error;
+
+  } finally {
+    next();
+
+}
+}, responseMiddleware);
+
+router.get('/:id', (req, res, next) => {
+  try {
+    res.data = fighterService.getOneFighter(req.params.id);
+
+  } catch (error) {
+    res.err = error;
+  } finally {
+  next();
+  
+}
+}, responseMiddleware);
+
+router.post('/', createFighterValid, (req, res, next) => {
+  try {
+    if (!res.err) {
+      res.data = fighterService.createFighter({...req.body});
+    }
+  } catch (error) {
+    res.err = error;
+  } finally {
+  next();
+  
+}
+}, responseMiddleware);
+
+router.put('/:id', updateFighterValid, (req, res, next) => {
+  try {
+    if (!res.err) {
+      res.data = fighterService.updateFighter( req.params.id, req.body);
+    }
+  } catch (error) {
+    res.err = error;
+
+  } finally {
+    next();
+
+  }
+}, responseMiddleware);
+
+router.delete('/:id', (req, res, next) => {
+  try {
+    res.data = fighterService.deleteFighter(req.params.id);
+    res.status(204)
+  } catch (error) {
+    res.err = error;
+
+  } finally {
+    next();
+
+  }
+}, responseMiddleware)
 
 export { router };
