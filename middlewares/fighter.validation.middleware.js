@@ -90,12 +90,14 @@ const createFighterValid = (req, res, next) => {
 
 const updateFighterValid = (req, res, next) => {
   const { name, health, power, defense} = req.body;
+  if (Object.keys(req.body).length < 1) {
+    res.status(400);
+    res.err = Error('It should be at least one field to update');
+  } else {
     try {
       // validateFighter(req);
-      if (Object.keys(req.body).length < 1) {
-        res.status(400);
-        res.err = Error('It should be at least one field to update');
-      } else if (checkOtherFields(req.body)) {
+
+      if (checkOtherFields(req.body)) {
         throw Error('Excess fields')
       } else if (checkEmptyFields(req.body)) {
         throw Error('Missing necessary fields')
@@ -121,6 +123,7 @@ const updateFighterValid = (req, res, next) => {
     } finally {
       next();
     };
+}
 };
 
 export { createFighterValid, updateFighterValid };

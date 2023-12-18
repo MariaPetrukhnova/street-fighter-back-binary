@@ -97,9 +97,6 @@ const createUserValid = (req, res, next) => {
   } else if (userService.search({phoneNumber: req.body.phoneNumber})) {
     res.err = Error(`User with this phone number already exists`);
     res.status(400);
-  } else if(req.body.id) {
-    res.err = Error(`Id field is not required`);
-    res.status(400);
   }
   next();
 };
@@ -107,35 +104,22 @@ const createUserValid = (req, res, next) => {
 const updateUserValid = (req, res, next) => {
   const validation = validateUser(req.body)
 
-  try {
-    if (Object.keys(req.body).length < 1 || req.body) {
-      return Error(`It should be at least one field to update`);
-    } else if (validation instanceof Error) {
-      res.err = validation;
-      res.status(400);
-    } else if (!userService.search({id: req.params.id})) {
-      res.err = Error(`User does not exist`);
-      res.status(400);
-    } else if (req.body.email && userService.search({email: req.body.email.toLowerCase()})) {
-      res.err = Error(`User with this email already exists. You can not use the same`);
-      res.status(400);
-    } else if (req.body.phoneNumber && userService.search({phoneNumber: req.body.phoneNumber})) {
-      res.err = Error(`User with this phone number already exists. You can not use the same`);
-      res.status(400);
-    } else if(req.body.id) {
-      res.err = Error(`Id field is not required`);
-      res.status(400);
-    }
-  } catch (err) {
-    if(err) {
-      res.err = err;
-    } else if (!userService.search({id: req.params.id})) {
-      res.err = Error(`User with id ${req.params.id} not found`);
-      res.err.status = 404;
+  if (Object.keys(req.body).length < 1) {
+    return Error(`It should be at least one field to update`);
+  } else if (validation instanceof Error) {
+    res.err = validation;
+    res.status(400);
+  } else if (!userService.search({id: req.params.id})) {
+    res.err = Error(`User does not exist`);
+    res.status(400);
+  } else if (req.body.email && userService.search({email: req.body.email.toLowerCase()})) {
+    res.err = Error(`User with this email already exists. You can not use the same`);
+    res.status(400);
+  } else if (req.body.phoneNumber && userService.search({phoneNumber: req.body.phoneNumber})) {
+    res.err = Error(`User with this phone number already exists. You can not use the same`);
+    res.status(400);
   }
-  } finally {
-    next();
-  }
+  next();
 };
 
 
